@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/AbePlays/gophercises/01-quiz-game/problem"
 )
@@ -25,16 +26,33 @@ func ParseLines(lines [][]string) []problem.Problem {
 	return res
 }
 
-func Evaluate(problems []problem.Problem) int {
+func Evaluate(problems []problem.Problem, timeLimit int) int {
 	correctCount := 0
 
-	for index, problem := range problems {
-		fmt.Printf("Problem %d: %s = \n", index+1, problem.Question)
-		var userAnswer string
-		fmt.Scanln(&userAnswer)
+	fmt.Print("Press enter to start the quiz... ")
+	fmt.Scanln()
 
-		if userAnswer == problem.Answer {
-			correctCount++
+	timer := time.NewTimer(time.Duration(timeLimit) * time.Second)
+	ch := make(chan string)
+
+	go func() {
+		for index, problem := range problems {
+			fmt.Printf("Problem %d: %s = \n", index+1, problem.Question)
+			var userAnswer string
+			fmt.Scanln(&userAnswer)
+			ch <- userAnswer
+		}
+		close(ch)
+	}()
+
+	for index := range problems {
+		select {
+		case <-timer.C:
+			return correctCount
+		case a := <-ch:
+			if strings.TrimSpace(a) == problems[index].Answer {
+				correctCount++
+			}
 		}
 	}
 

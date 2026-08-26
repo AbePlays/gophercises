@@ -11,6 +11,7 @@ import (
 
 func main() {
 	csvFilename := flag.String("csv", "problems.csv", "a csv file in the format of 'question,answer'")
+	timeLimit := flag.Int("limit", 30, "the time limit for the quiz in seconds")
 	flag.Parse()
 
 	file, err := os.Open(*csvFilename)
@@ -25,7 +26,7 @@ func main() {
 	}
 
 	problems := utils.ParseLines(lines)
-	correctCount := utils.Evaluate(problems)
+	correctCount := utils.Evaluate(problems, *timeLimit)
 
 	fmt.Printf("You got %d out of %d correct\n", correctCount, len(problems))
 }
