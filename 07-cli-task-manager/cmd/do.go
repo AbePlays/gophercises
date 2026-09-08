@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/AbePlays/gophercises/07-cli-task-manager/db"
-	"github.com/AbePlays/gophercises/07-cli-task-manager/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -13,15 +12,13 @@ var doCmd = &cobra.Command{
 	Use:   "do",
 	Short: "Marks a task as done",
 	Run: func(cmd *cobra.Command, args []string) {
-		var taskIds []int
+		var taskKeys []string
 
 		for _, arg := range args {
-			id, err := strconv.Atoi(arg)
-			if err != nil {
+			if _, err := strconv.Atoi(arg); err != nil {
 				continue
 			}
-
-			taskIds = append(taskIds, id)
+			taskKeys = append(taskKeys, arg)
 		}
 
 		tasks, err := db.AllTasks()
@@ -30,14 +27,15 @@ var doCmd = &cobra.Command{
 			return
 		}
 
-		for _, id := range taskIds {
+		for _, key := range taskKeys {
+			id, _ := strconv.Atoi(key)
 			if id <= 0 || id > len(tasks) {
 				fmt.Printf("Invalid task ID: %d\n", id)
 				continue
 			}
 
 			task := tasks[id-1]
-			err := db.DeleteTask(utils.Atoi(task.Key))
+			err := db.DeleteTaskByKey(task.Key)
 			if err != nil {
 				fmt.Println(err)
 			} else {

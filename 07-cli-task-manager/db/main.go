@@ -75,3 +75,16 @@ func DeleteTask(id int) error {
 		return bucket.Delete(key)
 	})
 }
+
+// DeleteTaskByKey removes the task identified by key (a decimal string such as
+// "1" or "2").
+func DeleteTaskByKey(key string) error {
+	id, err := strconv.Atoi(key)
+	if err != nil {
+		return err
+	}
+	return db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(taskBucket)
+		return bucket.Delete(utils.Itob(id))
+	})
+}
